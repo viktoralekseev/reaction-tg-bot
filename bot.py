@@ -17,7 +17,7 @@ async def start_game(message: types.Message):
 
 @dp.message_handler(commands=['play'])
 async def play_round(message: types.Message):
-    scores = []
+    scores = {}
     task = "Нажмите на кнопку 'Есть ответ!'"
     keyboard = types.InlineKeyboardMarkup()
     button = types.InlineKeyboardButton("Есть ответ!", callback_data="react")
