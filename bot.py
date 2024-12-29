@@ -17,6 +17,7 @@ async def start_game(message: types.Message):
 
 @dp.message_handler(commands=['play'])
 async def play_round(message: types.Message):
+    scores = []
     task = "Нажмите на кнопку 'Есть ответ!'"
     keyboard = types.InlineKeyboardMarkup()
     button = types.InlineKeyboardButton("Есть ответ!", callback_data="react")
@@ -27,7 +28,7 @@ async def play_round(message: types.Message):
 async def reaction_handler(callback_query: types.CallbackQuery):
     user_id = callback_query.from_user.id
     user_name = callback_query.from_user.full_name
-    if user_id not in scores:
+    if len(scores) == 0:
         scores[user_id] = 1
         chat_id = callback_query.message.chat.id
         await bot.send_message(chat_id, f"{user_name}, вы были первым!")
