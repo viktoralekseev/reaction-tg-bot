@@ -17,9 +17,9 @@ async def start_game(message: types.Message):
 
 @dp.message_handler(commands=['play'])
 async def play_round(message: types.Message):
-    task = "Нажмите на кнопку 'Быстрее!'"
+    task = "Нажмите на кнопку 'Есть ответ!'"
     keyboard = types.InlineKeyboardMarkup()
-    button = types.InlineKeyboardButton("Быстрее!", callback_data="react")
+    button = types.InlineKeyboardButton("Есть ответ!", callback_data="react")
     keyboard.add(button)
     await message.answer(task, reply_markup=keyboard)
 
@@ -29,17 +29,10 @@ async def reaction_handler(callback_query: types.CallbackQuery):
     user_name = callback_query.from_user.full_name
     if user_id not in scores:
         scores[user_id] = 1
-        await bot.answer_callback_query(callback_query.id, text=f"{user_name}, вы были первым!")
+        chat_id = callback_query.message.chat.id
+        await bot.send_message(chat_id, f"{user_name}, вы были первым!")
     else:
         await bot.answer_callback_query(callback_query.id, text="Уже поздно!")
-
-@dp.message_handler(commands=['scores'])
-async def show_scores(message: types.Message):
-    if not scores:
-        await message.answer("Пока никто не набрал очков.")
-        return
-    leaderboard = "\n".join([f"{message.chat.get_member(uid).user.full_name}: {score}" for uid, score in scores.items()])
-    await message.answer(f"Результаты игры:\n{leaderboard}")
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
