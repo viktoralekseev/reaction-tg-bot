@@ -7,22 +7,41 @@ API_TOKEN = os.getenv('BOT_TOKEN')  # Получение токена из пе�
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot)
 
+# Создание кастомной клавиатуры для администратора
+admin_keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+admin_keyboard.add(KeyboardButton("Начать игру"))
+
 # Словарь для хранения результатов
 scores = {}
 
-@dp.message_handler(commands=['start'])
-async def start_game(message: types.Message):
-    scores.clear()  # Очистить результаты перед новой игрой
-    await message.answer("Добро пожаловать! Кто первый реагирует, получает баллы. Напишите /play для начала игры.")
+# Обработчик команды /start
+@dp.message_handler(commands=["start"])
+async def start_handler(message: types.Message):
+    # Проверяем, является ли пользователь администратором
+    chat_member = await bot.get_chat_member(message.chat.id, message.from_user.id)
+    if chat_member.is_chat_admin():
+        # Если администратор, отправляем клавиатуру с кнопкой
+        await message.reply("Привет, администратор! Вот меню управления:", reply_markup=admin_keyboard)
+    else:
+        # Если не администратор, отправляем обычное сообщение
+        await message.reply("Добро пожаловать! У вас нет прав администратора.")
 
-@dp.message_handler(commands=['play'])
-async def play_round(message: types.Message):
-    scores.clear()
-    task = "Нажмите на кнопку 'Есть ответ!'"
-    keyboard = types.InlineKeyboardMarkup()
-    button = types.InlineKeyboardButton("Есть ответ!", callback_data="react")
-    keyboard.add(button)
-    await message.answer(task, reply_markup=keyboard)
+# Обработчик кнопки "Начать игру"
+@dp.message_handler(lambda message: message.text == "Начать игру")
+async def start_game_handler(message: types.Message):
+    # Проверяем, является ли пользователь администратором
+    chat_member = await bot.get_chat_member(message.chat.id, message.from_user.id)
+    if chat_member.is_chat_admin():
+        # Логика запуска игры
+        scores.clear()
+        task = "Нажмите на кнопку 'Есть ответ!'"
+        keyboard = types.InlineKeyboardMarkup()
+        button = types.InlineKeyboardButton("Есть ответ!", callback_data="react")
+        keyboard.add(button)
+        await message.answer(task, reply_markup=keyboard)
+    else:
+        # Если не администратор, игнорируем
+        await message.reply("Вы не администратор и не можете начинать игру.")
 
 @dp.callback_query_handler(lambda c: c.data == 'react')
 async def reaction_handler(callback_query: types.CallbackQuery):
